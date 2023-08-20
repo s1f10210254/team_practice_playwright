@@ -1,4 +1,4 @@
-import type { TrendModel } from 'commonTypesWithClient/models';
+import type { TweetModel } from 'commonTypesWithClient/models';
 import { useAtom } from 'jotai';
 import { useState } from 'react';
 import { Loading } from 'src/components/Loading/Loading';
@@ -10,13 +10,22 @@ import styles from './index.module.css';
 
 const Home = () => {
   const [user] = useAtom(userAtom);
-  const [trends, setTrends] = useState<TrendModel[]>();
-  const fetchTrends = async () => {
-    setTrends(undefined);
+  // const [trends, setTrends] = useState<TrendModel[]>();
+  const [tweetBox, setTweetBox] = useState<TweetModel[]>();
+
+  // const fetchTrends = async () => {
+  //   setTrends(undefined);
+
+  //   const res = await apiClient.trends.$get().catch(returnNull);
+
+  //   if (res !== null) setTrends(res);
+  // };
+
+  const fetchTweet = async () => {
+    setTweetBox(undefined);
 
     const res = await apiClient.trends.$get().catch(returnNull);
-
-    if (res !== null) setTrends(res);
+    if (res !== null) setTweetBox(res);
   };
 
   if (!user) return <Loading visible />;
@@ -24,10 +33,10 @@ const Home = () => {
   return (
     <>
       <BasicHeader user={user} />
-      <div className={styles.title} style={{ marginTop: '120px' }}>
+      <div className={styles.title} style={{ marginTop: '60px' }}>
         Welcome to frourio!
       </div>
-
+      {/* 
       <div style={{ textAlign: 'center', marginTop: '40px' }}>
         <button onClick={fetchTrends}>Get trends</button>
       </div>
@@ -38,6 +47,19 @@ const Home = () => {
               <span>
                 {i + 1}位 {trend.word}
               </span>
+            </label>
+          </li>
+        ))}
+      </ul> */}
+
+      <div style={{ textAlign: 'center', marginTop: '40px' }}>
+        <button onClick={fetchTweet}>Tweet gene</button>
+      </div>
+      <ul className={styles.tasks}>
+        {tweetBox?.map((tweet, i) => (
+          <li key={i}>
+            <label>
+              <span>ツイート内容:{tweet.content}</span>
             </label>
           </li>
         ))}

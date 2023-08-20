@@ -1,7 +1,34 @@
-import type { TrendModel } from '$/commonTypesWithClient/models';
-import { TWITTER_PASSWORD, TWITTER_USERNAME } from '$/service/envValues';
+import type { TweetModel } from '$/commonTypesWithClient/models';
+import { OPENAIAPI, TWITTER_PASSWORD, TWITTER_USERNAME } from '$/service/envValues';
+import { ChatCompletionRequestMessageRoleEnum, Configuration, OpenAIApi } from 'openai';
 import type { Browser, BrowserContext, Page } from 'playwright';
 import { chromium } from 'playwright';
+
+const configuration = new Configuration({
+  apiKey: OPENAIAPI,
+});
+const openai = new OpenAIApi(configuration);
+
+const GPT = async () => {
+  try {
+    const response = await openai.createChatCompletion({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        {
+          role: ChatCompletionRequestMessageRoleEnum.User,
+          content: '簡単で面白いことを言ってください',
+        },
+      ],
+    });
+    const answer = response.data.choices[0].message?.content;
+    console.log(answer);
+    if (answer !== undefined) {
+      return answer;
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 const origin = 'https://twitter.com';
 
@@ -28,19 +55,39 @@ const getLoggedInPage = async () => {
 };
 
 export const twitterRepository = {
-  fetchTrends: async (): Promise<TrendModel[]> => {
+  //   fetchTrends: async (): Promise<TrendModel[]> => {
+  //     const page = await getLoggedInPage();
+
+  //     await page.goto(`${origin}/explore/tabs/trending`);
+
+  //     const selector = '[data-testid="trend"] > div > div:nth-child(2)';
+  //     await page.waitForSelector(selector);
+
+  //     return page
+  //       .locator(selector)
+  //       .allInnerTexts()
+  //       .then((trends) =>
+  //         trends.map((t): TrendModel => ({ isHashtag: t.startsWith('#'), word: t.replace('#', '') }))
+  //       );
+  //   },
+
+  fetchTweet: async (): Promise<TweetModel[]> => {
     const page = await getLoggedInPage();
+    // await page.goto(`${origin}/home`);
 
-    await page.goto(`${origin}/explore/tabs/trending`);
+    const tweetTextox = await page.getByRole('textbox', { name: 'Tweet text' });
+    await tweetTextox.click();
 
-    const selector = '[data-testid="trend"] > div > div:nth-child(2)';
-    await page.waitForSelector(selector);
+    // const contents = 'aaaa';
+    const contents = await GPT();
+    if (contents !== undefined) {
+      await tweetTextox.fill(contents);
 
-    return page
-      .locator(selector)
-      .allInnerTexts()
-      .then((trends) =>
-        trends.map((t): TrendModel => ({ isHashtag: t.startsWith('#'), word: t.replace('#', '') }))
-      );
+      await page.getByTestId('tweetButtonInline').click();
+
+      return [{ isHashtag: false, content: contents }];
+    } else {
+      return [{ isHashtag: false, content: 'GPTは生成できませんでした' }];
+    }
   },
 };

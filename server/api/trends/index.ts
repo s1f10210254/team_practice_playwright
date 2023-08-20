@@ -1,8 +1,12 @@
 import type { DefineMethods } from 'aspida';
-import type { TrendModel } from 'commonTypesWithClient/models';
+import type { TweetModel } from 'commonTypesWithClient/models';
 
 export type Methods = DefineMethods<{
+  // get: {
+  //   resBody: TrendModel[];
+  // };
+
   get: {
-    resBody: TrendModel[];
+    resBody: TweetModel[];
   };
 }>;
